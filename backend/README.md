@@ -2,11 +2,7 @@
 
 FastAPI + 原生 WebSocket，Python 3.12+。已实现匿名身份、固定双人席位、邀请与只读观战、双方准备、落子判胜／平局、双方确认悔棋、认输、断线重连、房间关闭及回收。
 
-采用单进程内存存储：**只能运行 1 个实例、1 个进程，重启后会话和房间全部失效。** 已有配套 [React 前端](../frontend/README.md)。当前服务部署在 Railway：
-
-```text
-https://adorable-harmony-production-cc48.up.railway.app
-```
+采用单进程内存存储：**只能运行 1 个实例、1 个进程，重启后会话和房间全部失效。** 已有配套 [React 前端](../frontend/README.md)，当前服务部署在 Railway。
 
 ## 本地运行
 
