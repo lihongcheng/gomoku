@@ -4,6 +4,7 @@ services:
     name: gomoku-backend
     runtime: docker
     plan: free
+    region: singapore
     numInstances: 1
     autoDeployTrigger: "off"
     dockerfilePath: ./backend/Dockerfile
@@ -11,9 +12,9 @@ services:
     healthCheckPath: /health
     envVars:
       - key: GOMOKU_FRONTEND_URL
-        sync: false
+        value: https://lihongcheng.github.io/gomoku/
       - key: GOMOKU_ALLOWED_ORIGINS
-        sync: false
+        value: '["https://lihongcheng.github.io"]'
       - key: GOMOKU_ADMIN_TOKEN
         generateValue: true
       - key: GOMOKU_ALLOW_MISSING_ORIGIN
