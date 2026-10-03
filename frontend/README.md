@@ -84,7 +84,7 @@ npm run test:e2e -- --project=mobile-webkit
 
 工作流假设 `gomoku/` 为独立 Git 仓库根目录；若仓库根是 `games/`，须将 `.github/workflows` 移到真正仓库根并调整所有工作目录、缓存和产物路径。
 
-**后端未上线时**：将 Pages Source 设为 GitHub Actions，然后手动运行 **Publish frontend to Pages** 并选择 `preview`。此模式展示前端，明确提示“对战服务尚未开放”，禁止创建／加入房间，不发起 API 或 WebSocket 请求，也不会使用 localhost。接入后端后重新选择 `live` 发布即可。
+**后端未上线时**：将 Pages Source 设为 GitHub Actions，然后手动运行 **Publish frontend to Pages** 并选择 `preview`。此模式展示前端，明确提示“对战服务尚未开放”，禁止创建／加入房间，不发起 API 或 WebSocket 请求，也不会使用 localhost。手动入口同时保留 `live` 选项。
 
 **开放在线对战时**：
 
@@ -92,7 +92,7 @@ npm run test:e2e -- --project=mobile-webkit
 2. 后端设置 `GOMOKU_FRONTEND_URL=https://用户名.github.io/仓库名/` 和 `GOMOKU_ALLOWED_ORIGINS=["https://用户名.github.io"]`。Origin 不带仓库路径。
 3. 在 GitHub 仓库 Variables 中设置 `VITE_API_ORIGIN=https://实际后端域名`。
 4. 仓库 Settings → Pages 的 Source 选择 GitHub Actions。
-5. 在默认分支手动运行 **Publish frontend to Pages**，选择 `live`。工作流先验证前后端及两种浏览器，再按 Pages 实际路径重新生产构建并发布。
+5. 将 `frontend/**` 或相关前端工作流变更推送到 `main`。**Publish frontend to Pages** 自动以 `live` 模式运行，先验证前后端及两种浏览器，再按 Pages 实际路径重新生产构建并发布。
 
 本地验证生产配置：
 
@@ -108,4 +108,4 @@ npm run check:production
 
 仅展示前端的产物可用 `VITE_SITE_MODE=preview VITE_API_ORIGIN= VITE_BASE_PATH=/gomoku/ npm run build` 构建，以相同环境变量运行 `npm run check:production` 检查。`npm run test:preview` 会在 Chrome 和手机 WebKit 中验证子路径、深链接刷新、按钮禁用和无后端请求。
 
-2026-10-03 已发布到 **https://lihongcheng.github.io/gomoku/**，仓库为 [lihongcheng/gomoku](https://github.com/lihongcheng/gomoku)。[首次展示模式流水线](https://github.com/lihongcheng/gomoku/actions/runs/37099017984) 和 [在线对战流水线](https://github.com/lihongcheng/gomoku/actions/runs/37115700371) 的验证、构建和部署均成功。当前线上是 `live` 模式，可创建房间、邀请对战和观战。
+2026-10-03 已发布到 **https://lihongcheng.github.io/gomoku/**，仓库为 [lihongcheng/gomoku](https://github.com/lihongcheng/gomoku)。[首次展示模式流水线](https://github.com/lihongcheng/gomoku/actions/runs/37099017984) 和 [在线对战流水线](https://github.com/lihongcheng/gomoku/actions/runs/37115700371) 的验证、构建和部署均成功。当前线上是 `live` 模式，可创建房间、邀请对战和观战；后续前端变更由 `main` 推送自动发布。

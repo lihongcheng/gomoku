@@ -209,7 +209,7 @@ GOMOKU_FRONTEND_URL=https://lihongcheng.github.io/gomoku/
 GOMOKU_ALLOWED_ORIGINS=["https://lihongcheng.github.io"]
 ```
 
-健康检查为 `/health`，公网同时提供 HTTPS 与 WSS；保持 1 个副本并启用 Serverless，关闭 GitHub 推送自动部署，避免普通提交直接中断在局房间。当前 Free 计划为 `$0/月` 并含 `$1/月` 资源额度，额度和平台策略可能变化，应以 [Railway 官方价格说明](https://docs.railway.com/pricing/plans) 为准。Serverless 服务空闲后会休眠，下一次请求可能经历冷启动或首次返回 502；任何伴随容器重建的唤醒、进程重启或重新部署都会清空内存房间。
+健康检查为 `/health`，公网同时提供 HTTPS 与 WSS；保持 1 个副本并启用 Serverless。Railway 监听 `main` 的 `/backend/**` 变更，等待 GitHub Actions 全部成功后自动部署。每次部署都可能中断在局房间并清空内存状态。当前 Free 计划为 `$0/月` 并含 `$1/月` 资源额度，额度和平台策略可能变化，应以 [Railway 官方价格说明](https://docs.railway.com/pricing/plans) 为准。Serverless 服务空闲后会休眠，下一次请求可能经历冷启动或首次返回 502；任何伴随容器重建的唤醒、进程重启或重新部署都会清空内存房间。
 
 当前未设置 `GOMOKU_ADMIN_TOKEN`，因此管理接口返回 404。如需受控排空发布，应先生成独立管理凭证并配置到 Railway，再使用下一节接口。
 
@@ -235,6 +235,6 @@ curl -X POST https://your-backend.example/admin/drain \
   -d '{"enabled":true}'
 ```
 
-新建房间被拒绝，已有创建请求重试、重连与对局继续；所有房间快照广播 `maintenance: true`，健康状态变为 `draining`，管理响应提供 `openRooms`。待房间自然结束并回收后手动发布；发送 `false` 可取消维护。进程意外重启和平台滚动切换不保证能够排空，进程重启后 `serverEpoch` 改变。
+新建房间被拒绝，已有创建请求重试、重连与对局继续；所有房间快照广播 `maintenance: true`，健康状态变为 `draining`，管理响应提供 `openRooms`。若要先排空再发布，须临时关闭 Railway 自动部署，待房间自然结束并回收后手动发布，再重新启用；发送 `false` 可取消维护。进程意外重启和平台滚动切换不保证能够排空，进程重启后 `serverEpoch` 改变。
 
 应用日志仅记录请求 ID、错误码和处理耗时，不输出会话凭证、请求正文或完整邀请 URL。管理凭证只保存在服务端／运维环境，不进入前端的 `VITE_*` 配置。

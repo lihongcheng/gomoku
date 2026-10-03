@@ -1,7 +1,13 @@
 name: Publish frontend to Pages
 
-# Manually publish either the frontend preview or the connected game.
+# Frontend changes publish live automatically; manual runs can still publish preview.
 on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend.yml"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
     inputs:
       site_mode:
@@ -32,8 +38,8 @@ jobs:
       run:
         working-directory: frontend
     env:
-      VITE_SITE_MODE: ${{ inputs.site_mode }}
-      VITE_API_ORIGIN: ${{ inputs.site_mode == 'live' && vars.VITE_API_ORIGIN || '' }}
+      VITE_SITE_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.site_mode || 'live' }}
+      VITE_API_ORIGIN: ${{ (github.event_name != 'workflow_dispatch' || inputs.site_mode == 'live') && vars.VITE_API_ORIGIN || '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

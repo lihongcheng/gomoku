@@ -70,8 +70,8 @@ Cloudflare 免费 Durable Objects 目前支持 SQLite 存储后端，超出免�
 - 保持 **1 个实例、1 个 Uvicorn 进程**，例如 `--workers 1`；生产不使用 `--reload`。
 - 应用正常断线重连可以恢复；服务重启、休眠或重新部署导致的内存丢失不能恢复。
 - 进程启动生成 `serverEpoch`，客户端发现换代或 `ROOM_GONE` 后停止重试旧操作，提示“房间已结束或服务已更新”。
-- 平台滚动部署时旧、新进程可能短暂共存，即使配置一个实例也不能保证原房间可重连。试玩阶段后端采取受控发布；关闭推送即自动部署，避免随一次提交中断所有对局。
-- 计划发布前暂停新建房间并告知在局玩家；不能承诺平台意外重启时也能完成排空。
+- 平台滚动部署时旧、新进程可能短暂共存，即使配置一个实例也不能保证原房间可重连。试玩阶段后端监听 `main` 的 `/backend/**` 变更，在 CI 成功后自动部署；每次部署均可能中断现有对局。
+- 若某次发布需要先排空房间，应临时关闭自动部署，再暂停新建房间并告知在局玩家；不能承诺平台意外重启时也能完成排空。
 
 ### 2.4 需要重启后恢复时
 
@@ -415,8 +415,8 @@ https://username.github.io/gomoku/#/room/8KD2MA?watch=另一随机令牌
 
 当前第 1、2、3 步已完成，代码位于 `backend/` 和 `frontend/`。运行说明见 [后端说明](backend/README.md) 与 [前端说明](frontend/README.md)。
 已补充 Python 测试工作流、Dockerfile 和 Render 备选模板；真实 HTTP/WebSocket 集成测试覆盖双人及观战流程、重复请求、连接接管、调度回收，以及 10 局／50 名观战者短时广播一致性。
-前端已补充匿名身份存储、REST 创建幂等、WS 全量同步、ACK 重试、自动重连、Hash 路由与 Pages 构建检查；本地 19 项前端单元测试和 Chrome／手机 WebKit 共 8 个真实后端 E2E 场景通过。CI 验证静态构建；Pages 工作流手动触发，在验证后按生产 API 和实际 Pages 子路径重新构建。
-GitHub Pages 与 Railway 后端已于 2026-10-03 完成发布。Pages 以 `live` 模式构建，公开 API 为 `https://adorable-harmony-production-cc48.up.railway.app`；公网短时验收已覆盖 HTTPS、CORS、WSS、双人对战、观战、落子、悔棋、认输和移动布局。Railway 保持 1 个副本、启用 Serverless 并关闭自动部署。尚未执行 30 分钟持续负载、跨地区网络指标和冷启动耗时统计，不能据此宣称达到性能目标。
+前端已补充匿名身份存储、REST 创建幂等、WS 全量同步、ACK 重试、自动重连、Hash 路由与 Pages 构建检查；本地 19 项前端单元测试和 Chrome／手机 WebKit 共 8 个真实后端 E2E 场景通过。CI 验证静态构建；`main` 的前端相关变更自动触发 Pages `live` 发布，手动入口仍可选择 `preview`。
+GitHub Pages 与 Railway 后端已于 2026-10-03 完成发布。Pages 以 `live` 模式构建，公开 API 为 `https://adorable-harmony-production-cc48.up.railway.app`；公网短时验收已覆盖 HTTPS、CORS、WSS、双人对战、观战、落子、悔棋、认输和移动布局。Railway 保持 1 个副本、启用 Serverless，并在 `/backend/**` 变更的 CI 成功后自动部署。尚未执行 30 分钟持续负载、跨地区网络指标和冷启动耗时统计，不能据此宣称达到性能目标。
 
 1. 实现纯规则引擎和状态转换测试，确定悔棋与截止边界。
 2. 实现匿名身份、房间管理、WebSocket 命令、快照与幂等。

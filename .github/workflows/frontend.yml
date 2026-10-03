@@ -2,7 +2,8 @@ name: Frontend checks
 
 on:
   push:
-    paths: ["frontend/**", "backend/**", ".github/workflows/frontend.yml"]
+    # Frontend pushes are checked by pages.yml before its automatic deployment.
+    paths: ["backend/**"]
   pull_request:
     paths: ["frontend/**", "backend/**", ".github/workflows/frontend.yml"]
   workflow_dispatch:
