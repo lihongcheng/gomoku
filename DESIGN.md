@@ -3,7 +3,7 @@
 版本：v0.4（首版前后端实现）  
 更新日期：2026-10-03  
 项目目录：`gomoku`  
-阶段：前后端已实现并通过本地及 CI 测试；前端已发布到 https://lihongcheng.github.io/gomoku/ ，当前为展示模式，后端尚未上线。
+阶段：前后端已实现并通过本地及 CI 测试；前端已以 `live` 模式发布到 https://lihongcheng.github.io/gomoku/ ，后端部署在 Railway 并完成短时公网功能验收。
 
 ## 1. 复评结论与范围
 
@@ -41,17 +41,18 @@ React/Vite + GitHub Pages + FastAPI/WebSocket 的总体架构合理，适合小�
 | 棋盘 | SVG + HTML 控件 | 225 个交点，无需 WebGL；缩放、命中测试和高亮容易验证 |
 | 后端 | Python FastAPI + 原生 WebSocket | 规则计算轻，单进程即可管理多个独立房间 |
 | 前端部署 | GitHub Actions 构建，GitHub Pages 托管 | 不需要前端服务器 |
-| 后端部署 | Render 免费 Web Service，用于邀请试玩 | 支持 Python、HTTPS/WSS，部署操作少 |
+| 后端部署 | Railway Free + Serverless，用于邀请试玩 | 无需绑卡，支持 Docker、HTTPS/WSS，并可在空闲时休眠 |
 | 房间存储 | 单进程内存 | 首版明确允许服务重启后房间失效 |
 | 账号和战绩数据库 | 暂不引入 | 当前需求不需要长期战绩 |
 
-**默认继续采用 Python，不因部署选择直接改写为另一种语言。** 但 Render 免费实例只作为试玩环境；不将其描述成免费且可靠的长期生产服务。
+**默认继续采用 Python，不因部署选择直接改写为另一种语言。** Railway Free 只作为试玩环境；不将其描述成免费且可靠的长期生产服务。
 
 ### 2.2 平台适配比较
 
 | 方案 | 对本游戏的适配 | 结论 |
 | --- | --- | --- |
-| Render 免费服务 | 无入站流量约 15 分钟后休眠，唤醒可能约 1 分钟；入站 WebSocket 消息计入活跃流量；有月度实例时长、带宽和构建限额 | Python 试玩首选，接受重启失局、冷启动及额度限制 |
+| Railway Free + Serverless | 当前 Free 计划 `$0/月`、含 `$1/月` 资源额度；空闲服务休眠，唤醒可能冷启动或首次返回 502；单服务最多 1 个副本 | 当前 Python 试玩方案，接受额度、重启失局和冷启动限制 |
+| Render 免费服务 | 无入站流量约 15 分钟后休眠，唤醒可能约 1 分钟；当前账号创建服务要求绑卡验证 | 保留 Blueprint 作为备选，本次未部署 |
 | Render 常驻付费实例 / 自有 VM | 可持续运行 Python 服务，自有 VM 还需自行维护 HTTPS 和系统 | 面向真实用户时优先评估；仅付费不会自动解决内存状态丢失 |
 | Oracle Cloud Always Free VM | 可运行常驻服务，但免费容量可能缺货，闲置资源可能被回收，需要运维 | 可选，不作为“保证永远在线”的方案 |
 | Google Cloud Run | 支持 WebSocket，但连接受请求超时限制，当前最长 60 分钟；连接打开期间实例被计为活跃；重连不保证回到原实例 | 不作为本游戏零成本首选，需要共享状态和计费评估 |
@@ -65,7 +66,7 @@ Cloudflare 免费 Durable Objects 目前支持 SQLite 存储后端，超出免�
 
 - 每月免费额度不等于无限运行保障；平台可能重启服务。
 - 心跳用于检测活跃房间连接，不向无人使用的服务发送外部保活请求。
-- Render 免费服务的本地文件不能作为可靠保存；免费 PostgreSQL 有到期限制，不能直接当作长期房间数据库。
+- Railway 容器文件和任何免费平台的本地文件都不能作为可靠保存；当前服务没有外部房间数据库。
 - 保持 **1 个实例、1 个 Uvicorn 进程**，例如 `--workers 1`；生产不使用 `--reload`。
 - 应用正常断线重连可以恢复；服务重启、休眠或重新部署导致的内存丢失不能恢复。
 - 进程启动生成 `serverEpoch`，客户端发现换代或 `ROOM_GONE` 后停止重试旧操作，提示“房间已结束或服务已更新”。
@@ -413,14 +414,14 @@ https://username.github.io/gomoku/#/room/8KD2MA?watch=另一随机令牌
 ## 12. 实施顺序与扩展条件
 
 当前第 1、2、3 步已完成，代码位于 `backend/` 和 `frontend/`。运行说明见 [后端说明](backend/README.md) 与 [前端说明](frontend/README.md)。
-已补充 Python 测试工作流、Dockerfile 和 Render 模板；真实 HTTP/WebSocket 集成测试覆盖双人及观战流程、重复请求、连接接管、调度回收，以及 10 局／50 名观战者短时广播一致性。
+已补充 Python 测试工作流、Dockerfile 和 Render 备选模板；真实 HTTP/WebSocket 集成测试覆盖双人及观战流程、重复请求、连接接管、调度回收，以及 10 局／50 名观战者短时广播一致性。
 前端已补充匿名身份存储、REST 创建幂等、WS 全量同步、ACK 重试、自动重连、Hash 路由与 Pages 构建检查；本地 19 项前端单元测试和 Chrome／手机 WebKit 共 8 个真实后端 E2E 场景通过。CI 验证静态构建；Pages 工作流手动触发，在验证后按生产 API 和实际 Pages 子路径重新构建。
-GitHub Pages 已于 2026-10-03 完成前端发布。后端未上线期间显式使用 `preview` 模式，禁用创建和加入、不发送 API／WebSocket 请求；接入后端后选择 `live` 并配置 HTTPS API 重新发布。尚未执行 Docker 构建、Render 发布、30 分钟负载或目标网络对战验收，不能据此宣称达到性能目标。
+GitHub Pages 与 Railway 后端已于 2026-10-03 完成发布。Pages 以 `live` 模式构建，公开 API 为 `https://adorable-harmony-production-cc48.up.railway.app`；公网短时验收已覆盖 HTTPS、CORS、WSS、双人对战、观战、落子、悔棋、认输和移动布局。Railway 保持 1 个副本、启用 Serverless 并关闭自动部署。尚未执行 30 分钟持续负载、跨地区网络指标和冷启动耗时统计，不能据此宣称达到性能目标。
 
 1. 实现纯规则引擎和状态转换测试，确定悔棋与截止边界。
 2. 实现匿名身份、房间管理、WebSocket 命令、快照与幂等。
 3. 实现多浏览器前端、移动交互、邀请、观战和重连。
-4. 完成 CI、Render 试玩部署和目标网络验收，再开放邀请试玩。
+4. 已完成 CI、Railway 试玩部署和短时公网验收；继续补充 30 分钟负载、冷启动及目标用户网络指标。
 5. 若需要房间跨重启恢复，先加入可靠存储；若不限定 Python，可比较 Durable Objects 的实现与额度。
 6. 只有性能证据表明单实例不足时才扩展多实例；历史战绩和账号系统另行设计。
 
@@ -430,6 +431,8 @@ GitHub Pages 已于 2026-10-03 完成前端发布。后端未上线期间显式�
 
 - [Render 免费服务限制](https://render.com/docs/free)
 - [Render 将入站 WebSocket 消息计入活跃流量的说明](https://render.com/changelog/free-web-services-now-remain-active-while-receiving-websocket-messages)
+- [Railway 计划、免费额度与资源上限](https://docs.railway.com/pricing/plans)
+- [Railway Serverless 休眠、唤醒与首次请求限制](https://docs.railway.com/deployments/serverless)
 - [Cloud Run WebSocket 超时、计费和多实例约束](https://cloud.google.com/run/docs/triggering/websockets?hl=en)
 - [Cloudflare Durable Objects 免费额度与 SQLite 存储](https://developers.cloudflare.com/durable-objects/platform/pricing/)
 - [Oracle Always Free 资源与限制](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm)

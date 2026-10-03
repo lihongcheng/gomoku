@@ -78,7 +78,7 @@ PLAYWRIGHT_CHANNEL=chrome npm run test:e2e -- --project=chromium
 npm run test:e2e -- --project=mobile-webkit
 ```
 
-2026-10-03 本地验证：前端 19 项单元测试；Chrome 和手机 WebKit 共 8 个对战 E2E 场景及 2 个独立展示模式场景通过，包含三端同步、只读不占座、满员观战、五连胜、悔棋同意／拒绝／超时、认输、离开、关闭房间、刷新重连、多标签接管、移动布局及 Pages 子路径。真实平台的网络、冷启动和长时间负载仍需上线环境验收。
+2026-10-03 本地及 CI 验证：前端 19 项单元测试；Chrome 和手机 WebKit 共 8 个对战 E2E 场景及 2 个独立展示模式场景通过，包含三端同步、只读不占座、满员观战、五连胜、悔棋同意／拒绝／超时、认输、离开、关闭房间、刷新重连、多标签接管、移动布局及 Pages 子路径。上线后另以独立浏览器上下文完成短时公网对战验收；平台冷启动耗时、跨地区网络指标和长时间负载仍待验证。
 
 ## GitHub Pages
 
@@ -108,4 +108,4 @@ npm run check:production
 
 仅展示前端的产物可用 `VITE_SITE_MODE=preview VITE_API_ORIGIN= VITE_BASE_PATH=/gomoku/ npm run build` 构建，以相同环境变量运行 `npm run check:production` 检查。`npm run test:preview` 会在 Chrome 和手机 WebKit 中验证子路径、深链接刷新、按钮禁用和无后端请求。
 
-2026-10-03 已发布到 **https://lihongcheng.github.io/gomoku/**，仓库为 [lihongcheng/gomoku](https://github.com/lihongcheng/gomoku)。[首次发布流水线](https://github.com/lihongcheng/gomoku/actions/runs/37099017984) 的验证、构建和部署均成功。当前线上是 `preview` 模式，构建元数据中 `apiOrigin` 为 `null`，尚未开放在线对战。
+2026-10-03 已发布到 **https://lihongcheng.github.io/gomoku/**，仓库为 [lihongcheng/gomoku](https://github.com/lihongcheng/gomoku)。[首次展示模式流水线](https://github.com/lihongcheng/gomoku/actions/runs/37099017984) 和 [在线对战流水线](https://github.com/lihongcheng/gomoku/actions/runs/37115700371) 的验证、构建和部署均成功。当前线上是 `live` 模式，API 指向 `https://adorable-harmony-production-cc48.up.railway.app`，可创建房间、邀请对战和观战。

@@ -2,7 +2,11 @@
 
 FastAPI + 原生 WebSocket，Python 3.12+。已实现匿名身份、固定双人席位、邀请与只读观战、双方准备、落子判胜／平局、双方确认悔棋、认输、断线重连、房间关闭及回收。
 
-采用单进程内存存储：**只能运行 1 个实例、1 个进程，重启后会话和房间全部失效。** 已有配套 [React 前端](../frontend/README.md)，尚未部署线上服务。
+采用单进程内存存储：**只能运行 1 个实例、1 个进程，重启后会话和房间全部失效。** 已有配套 [React 前端](../frontend/README.md)。当前服务部署在 Railway：
+
+```text
+https://adorable-harmony-production-cc48.up.railway.app
+```
 
 ## 本地运行
 
@@ -190,16 +194,30 @@ uv run --frozen ruff format --check .
 uv run --frozen pytest -q
 ```
 
-测试使用可控时钟验证截止边界，并在随机本地端口启动真实 Uvicorn，使用 HTTPX 和 WebSocket 客户端验证跨连接行为。包含 10 个房间、20 位玩家与 50 位观战者的短时广播一致性测试；**未完成设计中的 30 分钟负载、目标网络 WSS 和平台冷启动验收**。
+测试使用可控时钟验证截止边界，并在随机本地端口启动真实 Uvicorn，使用 HTTPX 和 WebSocket 客户端验证跨连接行为。包含 10 个房间、20 位玩家与 50 位观战者的短时广播一致性测试。
 
-## Docker 与 Render
+2026-10-03 已在公网完成 `/health`、Pages CORS、WSS、两名玩家与观战者、落子、悔棋、认输和房间关闭的短时验收；**尚未完成设计中的 30 分钟持续负载、跨地区网络指标和冷启动耗时统计**。
+
+## Docker、Railway 与 Render
 
 ```bash
 docker build -t gomoku-backend .
 docker run --rm -p 8000:8000 --env-file .env gomoku-backend
 ```
 
-Render Blueprint 位于 `../render.yaml`，使用 Docker、免费 Web Service、1 个实例、关闭自动部署。它假设 `gomoku/` 是独立 Git 仓库根目录；如果将整个 `games/` 建为仓库，需将 Blueprint 的构建路径加上 `gomoku/`，并把工作流放到仓库根 `.github/workflows/` 后调整路径。
+当前 Railway 服务从 `lihongcheng/gomoku` 的 `backend/` 构建 Dockerfile，设置如下：
+
+```text
+PORT=8000
+GOMOKU_FRONTEND_URL=https://lihongcheng.github.io/gomoku/
+GOMOKU_ALLOWED_ORIGINS=["https://lihongcheng.github.io"]
+```
+
+健康检查为 `/health`，公网同时提供 HTTPS 与 WSS；保持 1 个副本并启用 Serverless，关闭 GitHub 推送自动部署，避免普通提交直接中断在局房间。当前 Free 计划为 `$0/月` 并含 `$1/月` 资源额度，额度和平台策略可能变化，应以 [Railway 官方价格说明](https://docs.railway.com/pricing/plans) 为准。Serverless 服务空闲后会休眠，下一次请求可能经历冷启动或首次返回 502；任何伴随容器重建的唤醒、进程重启或重新部署都会清空内存房间。
+
+当前未设置 `GOMOKU_ADMIN_TOKEN`，因此管理接口返回 404。如需受控排空发布，应先生成独立管理凭证并配置到 Railway，再使用下一节接口。
+
+Render Blueprint 位于 `../render.yaml`，保留为备选方案；本次未使用，因为当前账号创建服务需要绑定支付卡。模板使用 Docker、1 个实例并关闭自动部署。它假设 `gomoku/` 是独立 Git 仓库根目录；如果将整个 `games/` 建为仓库，需将 Blueprint 的构建路径加上 `gomoku/`，并把工作流放到仓库根 `.github/workflows/` 后调整路径。
 
 在 Render 填写：
 
@@ -208,11 +226,11 @@ GOMOKU_FRONTEND_URL=https://username.github.io/gomoku/
 GOMOKU_ALLOWED_ORIGINS=["https://username.github.io"]
 ```
 
-Origin 不带仓库路径。Render 提供 HTTPS/WSS 与 `PORT`；健康检查为 `/health`。本地未安装 Docker，因此镜像构建与 Blueprint 尚未在平台执行。免费实例可能休眠、重启或冷启动，持久性与可用性边界见 [设计方案](../DESIGN.md)。
+Origin 不带仓库路径。Render 提供 HTTPS/WSS 与 `PORT`；健康检查为 `/health`。Render 模板尚未在平台执行。免费实例可能休眠、重启或冷启动，持久性与可用性边界见 [设计方案](../DESIGN.md)。
 
 ## 受控发布
 
-可选 `GOMOKU_ADMIN_TOKEN` 启用管理接口；为空时接口返回 404。Render 模板会生成独立管理凭证。调用：
+可选 `GOMOKU_ADMIN_TOKEN` 启用管理接口；为空时接口返回 404。Render 模板会生成独立管理凭证，Railway 需手动生成并设置。调用：
 
 ```bash
 curl -X POST https://your-backend.example/admin/drain \
