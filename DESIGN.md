@@ -3,7 +3,7 @@
 版本：v0.4（首版前后端实现）  
 更新日期：2026-10-03  
 项目目录：`gomoku`  
-阶段：前后端已实现并通过本地单元及浏览器 E2E 测试；线上部署尚未完成。
+阶段：前后端已实现并通过本地及 CI 测试；前端已发布到 https://lihongcheng.github.io/gomoku/ ，当前为展示模式，后端尚未上线。
 
 ## 1. 复评结论与范围
 
@@ -415,7 +415,7 @@ https://username.github.io/gomoku/#/room/8KD2MA?watch=另一随机令牌
 当前第 1、2、3 步已完成，代码位于 `backend/` 和 `frontend/`。运行说明见 [后端说明](backend/README.md) 与 [前端说明](frontend/README.md)。
 已补充 Python 测试工作流、Dockerfile 和 Render 模板；真实 HTTP/WebSocket 集成测试覆盖双人及观战流程、重复请求、连接接管、调度回收，以及 10 局／50 名观战者短时广播一致性。
 前端已补充匿名身份存储、REST 创建幂等、WS 全量同步、ACK 重试、自动重连、Hash 路由与 Pages 构建检查；本地 19 项前端单元测试和 Chrome／手机 WebKit 共 8 个真实后端 E2E 场景通过。CI 验证静态构建；Pages 工作流手动触发，在验证后按生产 API 和实际 Pages 子路径重新构建。
-尚未执行 Docker 构建、Render／Pages 发布、30 分钟负载或目标网络验收，不能据此宣称达到性能目标。
+GitHub Pages 已于 2026-10-03 完成前端发布。后端未上线期间显式使用 `preview` 模式，禁用创建和加入、不发送 API／WebSocket 请求；接入后端后选择 `live` 并配置 HTTPS API 重新发布。尚未执行 Docker 构建、Render 发布、30 分钟负载或目标网络对战验收，不能据此宣称达到性能目标。
 
 1. 实现纯规则引擎和状态转换测试，确定悔棋与截止边界。
 2. 实现匿名身份、房间管理、WebSocket 命令、快照与幂等。

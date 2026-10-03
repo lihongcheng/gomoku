@@ -108,4 +108,4 @@ npm run check:production
 
 仅展示前端的产物可用 `VITE_SITE_MODE=preview VITE_API_ORIGIN= VITE_BASE_PATH=/gomoku/ npm run build` 构建，以相同环境变量运行 `npm run check:production` 检查。`npm run test:preview` 会在 Chrome 和手机 WebKit 中验证子路径、深链接刷新、按钮禁用和无后端请求。
 
-CI 和 Pages 工作流已提供，尚未实际发布到 GitHub 或部署线上服务。
+2026-10-03 已发布到 **https://lihongcheng.github.io/gomoku/**，仓库为 [lihongcheng/gomoku](https://github.com/lihongcheng/gomoku)。[首次发布流水线](https://github.com/lihongcheng/gomoku/actions/runs/37099017984) 的验证、构建和部署均成功。当前线上是 `preview` 模式，构建元数据中 `apiOrigin` 为 `null`，尚未开放在线对战。
