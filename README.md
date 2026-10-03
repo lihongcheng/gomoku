@@ -2,7 +2,7 @@
 
 在线五子棋应用：React / TypeScript 前端 + Python FastAPI / WebSocket 后端。支持邀请双人对战、只读观战、双方准备、悔棋审批、认输、断线恢复和房间回收。
 
-试玩地址：**https://lihongcheng.github.io/gomoku/**。
+试玩地址：https://lihongcheng.github.io/gomoku/。
 
 当前线上为 `live` 模式，可创建房间并通过邀请链接在线对战或观战。后端部署在 Railway Free，启用 Serverless，按量使用每月免费额度；冷启动、平台重启或额度耗尽可能导致暂时不可用。
 
