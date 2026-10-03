@@ -1,0 +1,68 @@
+name: Publish frontend to Pages
+
+# Manually publish either the frontend preview or the connected game.
+on:
+  workflow_dispatch:
+    inputs:
+      site_mode:
+        description: "preview 仅展示前端；live 需要配置线上后端"
+        type: choice
+        options: [preview, live]
+        default: preview
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gomoku-pages
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/frontend.yml
+
+  build:
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      VITE_SITE_MODE: ${{ inputs.site_mode }}
+      VITE_API_ORIGIN: ${{ inputs.site_mode == 'live' && vars.VITE_API_ORIGIN || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/configure-pages@v5
+        id: pages
+      - name: Resolve Pages base path
+        env:
+          PAGES_PATH: ${{ steps.pages.outputs.base_path }}
+        run: echo "VITE_BASE_PATH=${PAGES_PATH%/}/" >> "$GITHUB_ENV"
+      - run: npm ci
+      - run: npm run build
+      - run: npm run check:production
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment

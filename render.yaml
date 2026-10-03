@@ -1,0 +1,20 @@
+# Assumes gomoku/ is the Git repository root.
+services:
+  - type: web
+    name: gomoku-backend
+    runtime: docker
+    plan: free
+    numInstances: 1
+    autoDeployTrigger: "off"
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: GOMOKU_FRONTEND_URL
+        sync: false
+      - key: GOMOKU_ALLOWED_ORIGINS
+        sync: false
+      - key: GOMOKU_ADMIN_TOKEN
+        generateValue: true
+      - key: GOMOKU_ALLOW_MISSING_ORIGIN
+        value: "false"
